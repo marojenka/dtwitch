@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=/home/foo/fun/twitch
+PREFIX=~/fun/dtwitch
 TOKEN=$PREFIX/token
 JSON=$PREFIX/list_streams.json
 STREAMS=$PREFIX/list_streams.txt
@@ -28,4 +28,4 @@ if [[ $selected == '' ]]; then
 fi
 IFS=$IFS_
 
-twitch_watch $selected
+twitch-watch $selected
