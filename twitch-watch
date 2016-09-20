@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ $1 == "" ]]; then
+    echo NOTHING?!+ 
+    exit 42
+else
+    URL="https://www.twitch.tv/"$1 
+fi
+
+livestreamer $URL
+if [[ $? != 0 ]]; then 
+    exit $?
+fi
+
+firefox --new-window "https://www.twitch.tv/"$1"/chat?popout=" &
+livestreamer $URL best
