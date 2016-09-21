@@ -1,0 +1,57 @@
+#!/bin/bash
+
+PREFIX=~/fun/dtwitch
+TOKEN=$PREFIX/token
+JSON=$PREFIX/foo.json
+STREAMS=$PREFIX/streams.txt
+COMMANDS=$PREFIX/commands.txt
+
+function get_fav() {
+    curl -s -H 'Accept: application/vnd.twitchtv.v3+json' -H "Authorization: OAuth $(cat $TOKEN)" \
+        -X GET 'https://api.twitch.tv/kraken/streams/followed?stream_type=live' \
+        -o $JSON
+}
+
+function get_top() {
+    curl -s -H 'Accept: application/vnd.twitchtv.v3+json' -H "Authorization: OAuth $(cat $TOKEN)" \
+        -X GET 'https://api.twitch.tv/kraken/streams?limit=100&stream_type=live' \
+        -o $JSON
+}
+
+IFS_=$IFS
+IFS=$(echo -en \n\b)
+IFS=$'\n'
+
+Target='fav'
+
+while : ; do 
+    if [[ $Target == 'fav' ]]; then
+        get_fav
+    else
+        get_top
+    fi        
+    name=($(jq '.streams[].channel.name' $JSON))
+    display_name=($(jq '.streams[].channel.display_name' $JSON))
+    status=($(jq '.streams[].channel.status' $JSON))
+    game=($(jq '.streams[].channel.game' $JSON))
+
+    for ii in $(seq 0 $(( ${#name[@]} - 1 ))); do
+        echo -e $ii:"\t"${name[$ii]}"\t"${game[$ii]}"\t"${status[$ii]}"\t"${name[$ii]}
+    done | column -t -s \" | sed 's/\t/  /g' > $STREAMS
+
+    select=$(cat $STREAMS $COMMANDS | dmenu -l 20)
+    if [[ $select == '' ]]; then 
+        exit 22
+    elif [[ $select == 'fav' ]]; then 
+        Target='fav'
+    elif [[ $select == 'top' ]]; then 
+        Target='top'
+    else 
+        selected=$(echo $STREAMS | awk 'NF>1 {printf $NF}')
+        break;
+    fi
+done
+
+IFS=$IFS_
+
+twitch-watch $selected
