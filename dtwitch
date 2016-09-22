@@ -47,7 +47,7 @@ while : ; do
     elif [[ $select == 'top' ]]; then 
         Target='top'
     else 
-        selected=$(echo $select | awk 'NF>1 {printf $NF}')
+        selected=$(echo $select | awk '{printf $2}')
         break;
     fi
 done
