@@ -31,17 +31,11 @@ fi
 PID=$(cat $TABBED_PID 2>/dev/null)
 XID=$(cat $TABBED_XID 2>/dev/null)
 
-
 ps -p $PID 2>&1 | grep '[t]'abbed > /dev/null 2>&1
 if [[ $? != 0 ]] || [[ $XID == "" ]] ; then 
     echo "Create new tabbed"
-    existed=($( ps u | grep "[t]abbed" | awk '{print $2}' ))
-    tabbed -n "twitch chat" -d > $TABBED_XID 
-    new=$( ps u | grep "[t]abbed" | awk '{print $2}' )
-    for EX_PID in "${existed[@]}"; do 
-        new=${new#$EX_PID}
-    done
-    PID=$new
+    tabbed -n "twitch chat"  > $TABBED_XID &
+    PID=$!
     echo $PID > $TABBED_PID
     XID=$(cat $TABBED_XID 2>/dev/null)
 fi 
