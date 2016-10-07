@@ -1,16 +1,52 @@
 #!/bin/bash
 
-if [[ $1 == "" ]]; then
+RUN_DIR="/tmp/dtwitch/"
+TABBED_PID=$RUN_DIR"/tabbed.pid"
+TABBED_XID=$RUN_DIR"/tabbed.xid"
+
+STREAM_NAME=$1
+
+if [[ $STREAM_NAME == "" ]]; then
     echo NOTHING?!+ 
     exit 42
 else
-    URL="https://www.twitch.tv/"$1 
+    URL="https://www.twitch.tv/"$STREAM_NAME 
+    CHAT_URL="https://www.twitch.tv/"$STREAM_NAME"/chat?popout="
 fi
 
+# Open stream
 livestreamer $URL
 if [[ $? != 0 ]]; then 
     exit $?
 fi
 
-firefox --new-window "https://www.twitch.tv/"$1"/chat?popout=" &
+# Open chat
+if [ ! -d "$RUN_DIR" ]; then
+    ( mkdir $RUN_DIR ) || { 
+        echo "Can't create dir $RUN_DIR"
+        exit 12
+    }
+fi
+
+PID=$(cat $TABBED_PID 2>/dev/null)
+XID=$(cat $TABBED_XID 2>/dev/null)
+
+
+ps -p $PID 2>&1 | grep '[t]'abbed > /dev/null 2>&1
+if [[ $? != 0 ]] || [[ $XID == "" ]] ; then 
+    echo "Create new tabbed"
+    existed=($( ps u | grep "[t]abbed" | awk '{print $2}' ))
+    tabbed -n "twitch chat" -d > $TABBED_XID 
+    new=$( ps u | grep "[t]abbed" | awk '{print $2}' )
+    for EX_PID in "${existed[@]}"; do 
+        new=${new#$EX_PID}
+    done
+    PID=$new
+    echo $PID > $TABBED_PID
+    XID=$(cat $TABBED_XID 2>/dev/null)
+fi 
+
+surf -e $XID $CHAT_URL > /dev/null 2>&1 & 
+
+firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
 livestreamer $URL best
