@@ -48,5 +48,5 @@ fi
 
 surf -e $XID $CHAT_URL > /dev/null 2>&1 & 
 
-firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
+# firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
 livestreamer $URL best
