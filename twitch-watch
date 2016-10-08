@@ -15,10 +15,11 @@ else
 fi
 
 # Open stream
-livestreamer $URL
-if [[ $? != 0 ]]; then 
-    exit $?
-fi
+( livestreamer $URL ) || {
+    ERROR=$?
+    echo livestreamer failed
+    exit $ERROR
+}
 
 # Open chat
 if [ ! -d "$RUN_DIR" ]; then
@@ -32,15 +33,36 @@ PID=$(cat $TABBED_PID 2>/dev/null)
 XID=$(cat $TABBED_XID 2>/dev/null)
 
 ps -p $PID 2>&1 | grep '[t]'abbed > /dev/null 2>&1
-if [[ $? != 0 ]] || [[ $XID == "" ]] ; then 
+TABBED_FOUND=$?
+if [[ $TABBED_FOUND != 0 ]] || [[ $XID == "" ]] ; then 
     echo "Create new tabbed"
-    tabbed -n "twitch chat"  > $TABBED_XID &
+    if [[ $TABBED_FOUND != 0 ]]; then
+        echo 'tabbed not found'
+    fi 
+    if [[ $XID == "" ]]; then 
+        echo "XID is empty, why?!+" 
+    fi 
+    
+    tabbed -n "twitch chat" -c  > $TABBED_XID &
     PID=$!
     echo $PID > $TABBED_PID
-    XID=$(cat $TABBED_XID 2>/dev/null)
+    XID=""; 
+    for ii in 1 2 3 4 5 6 7 8 9; do 
+        XID=$(cat $TABBED_XID 2>/dev/null)
+        if [[ $XID != "" ]]; then
+            break
+        fi 
+        sleep .1s 
+    done 
 fi 
 
+echo xid: $XID
+echo pid: $PID
 surf -e $XID $CHAT_URL > /dev/null 2>&1 & 
+CHAT_PID=$!
+echo $CHAT_PID
 
 # firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
 livestreamer $URL best
+kill -s 15 $CHAT_PID
+
