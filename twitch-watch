@@ -58,11 +58,13 @@ fi
 
 echo xid: $XID
 echo pid: $PID
+echo 'surf -e $XID -l "'$STREAM_NAME'" "'$CHAT_URL'" > /dev/null 2>&1 '
 surf -e $XID -l "$STREAM_NAME" $CHAT_URL > /dev/null 2>&1 & 
 CHAT_PID=$!
 echo $CHAT_PID
 
 # firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
+echo livestreamer $URL best
 livestreamer $URL best
 kill -s 15 $CHAT_PID
 
