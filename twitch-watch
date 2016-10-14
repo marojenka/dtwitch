@@ -58,11 +58,7 @@ fi
 
 echo xid: $XID
 echo pid: $PID
-<<<<<<< HEAD
 echo 'surf -e $XID -l "'$STREAM_NAME'" "'$CHAT_URL'" > /dev/null 2>&1 '
-=======
-echo 'surf -e $XID -l "$STREAM_NAME" $CHAT_URL > /dev/null 2>&1 '
->>>>>>> 26d32dba78d5bf4f95b22b75b6cbc6306ef62438
 surf -e $XID -l "$STREAM_NAME" $CHAT_URL > /dev/null 2>&1 & 
 CHAT_PID=$!
 echo $CHAT_PID
