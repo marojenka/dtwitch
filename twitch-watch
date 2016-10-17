@@ -3,7 +3,9 @@
 RUN_DIR="/tmp/dtwitch/"
 TABBED_PID=$RUN_DIR"/tabbed.pid"
 TABBED_XID=$RUN_DIR"/tabbed.xid"
+OUTPUT=$RUN_DIR"/livestreamer_out"
 
+STREAM_NAME="epicenter_en1" # just random online chanel for debug
 STREAM_NAME=$1
 
 if [[ $STREAM_NAME == "" ]]; then
@@ -15,10 +17,16 @@ else
 fi
 
 # Open stream
-( livestreamer $URL ) || {
+( livestreamer $URL > $OUTPUT ) || {
     ERROR=$?
     echo livestreamer failed
     exit $ERROR
+}
+
+QUAL="best"
+OUT=$(cat $OUTPUT | grep "Available streams")
+( echo $OUT | grep best) || {
+    OUT=$(echo $OUT | sed 's/.*://;s/,//g;s/ /\n/g;s/audio//' | sort -h | tail -n 1)
 }
 
 # Open chat
