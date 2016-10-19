@@ -16,6 +16,14 @@ else
     CHAT_URL="https://www.twitch.tv/"$STREAM_NAME"/chat?popout="
 fi
 
+if [ ! -d "$RUN_DIR" ]; then
+    ( mkdir $RUN_DIR ) || { 
+        echo "Can't create dir $RUN_DIR"
+        exit 12
+    }
+fi
+
+
 # Open stream
 ( livestreamer $URL > $OUTPUT ) || {
     ERROR=$?
@@ -26,17 +34,10 @@ fi
 QUAL="best"
 OUT=$(cat $OUTPUT | grep "Available streams")
 ( echo $OUT | grep best) || {
-    OUT=$(echo $OUT | sed 's/.*://;s/,//g;s/ /\n/g;s/audio//' | sort -h | tail -n 1)
+    QUAL=$(echo $OUT | sed 's/.*://;s/,//g;s/ /\n/g;s/audio//' | sort -h | tail -n 1)
 }
 
 # Open chat
-if [ ! -d "$RUN_DIR" ]; then
-    ( mkdir $RUN_DIR ) || { 
-        echo "Can't create dir $RUN_DIR"
-        exit 12
-    }
-fi
-
 PID=$(cat $TABBED_PID 2>/dev/null)
 XID=$(cat $TABBED_XID 2>/dev/null)
 
@@ -72,7 +73,7 @@ CHAT_PID=$!
 echo $CHAT_PID
 
 # firefox --new-window "https://www.twitch.tv/"$STREAM_NAME"/chat?popout=" &
-echo livestreamer $URL best
-livestreamer $URL best
+echo livestreamer $URL $QUAL
+livestreamer $URL $QUAL
 kill -s 15 $CHAT_PID
 
