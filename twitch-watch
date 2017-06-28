@@ -28,6 +28,7 @@ fi
 ( livestreamer $URL > $OUTPUT ) || {
     ERROR=$?
     echo livestreamer failed
+    echo livestreamer $URL
     exit $ERROR
 }
 
